@@ -1,0 +1,11 @@
+component	tar_file	stable_image	release_image	release_tag	updated_at
+openwebui	company_openwebui_custom-20260207.tar	forstar/openwebui:offline	company/openwebui:custom-20260207	bootstrap-20260207	2026-02-08T00:00:00+08:00
+proxy	company_ragflow-openai-proxy_20260207.tar	forstar/ragflow-openai-proxy:offline	company/ragflow-openai-proxy:20260207	bootstrap-20260207	2026-02-08T00:00:00+08:00
+ragflow	infiniflow_ragflow_v0.23.1.tar	infiniflow/ragflow:v0.23.1	infiniflow/ragflow:v0.23.1	bootstrap-20260207	2026-02-08T00:00:00+08:00
+deps	mysql_8.0.39.tar	mysql:8.0.39	mysql:8.0.39	bootstrap-20260207	2026-02-08T00:00:00+08:00
+deps	quay.io_minio_minio_RELEASE.2025-06-13T11-33-47Z.tar	quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z	quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z	bootstrap-20260207	2026-02-08T00:00:00+08:00
+deps	valkey_valkey_8.tar	valkey/valkey:8	valkey/valkey:8	bootstrap-20260207	2026-02-08T00:00:00+08:00
+deps	elasticsearch_8.11.3.tar	elasticsearch:8.11.3	elasticsearch:8.11.3	bootstrap-20260207	2026-02-08T00:00:00+08:00
+vllm	vllm_vllm-openai_latest.tar	forstar/vllm-openai:offline	vllm/vllm-openai:latest	bootstrap-20260207	2026-02-08T00:00:00+08:00
+tei	infiniflow_text-embeddings-inference_cpu-1.8.tar	infiniflow/text-embeddings-inference:cpu-1.8	infiniflow/text-embeddings-inference:cpu-1.8	bootstrap-20260207	2026-02-08T00:00:00+08:00
+tei	infiniflow_text-embeddings-inference_1.8.tar	infiniflow/text-embeddings-inference:1.8	infiniflow/text-embeddings-inference:1.8	bootstrap-20260207	2026-02-08T00:00:00+08:00

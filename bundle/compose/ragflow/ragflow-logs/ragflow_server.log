@@ -1,0 +1,40 @@
+2026-02-08 01:41:22,419 INFO     23 ragflow_server log path: /ragflow/logs/ragflow_server.log, log levels: {'peewee': 'WARNING', 'pdfminer': 'WARNING', 'root': 'INFO'}
+2026-02-08 01:41:22,419 INFO     23 
+        ____   ___    ______ ______ __
+       / __ \ /   |  / ____// ____// /____  _      __
+      / /_/ // /| | / / __ / /_   / // __ \| | /| / /
+     / _, _// ___ |/ /_/ // __/  / // /_/ /| |/ |/ /
+    /_/ |_|/_/  |_|\____//_/    /_/ \____/ |__/|__/
+
+    
+2026-02-08 01:41:22,420 INFO     23 RAGFlow version: v0.23.1
+2026-02-08 01:41:22,421 INFO     23 project base: /ragflow
+2026-02-08 01:41:22,421 INFO     23 Current configs, from /ragflow/conf/service_conf.yaml:
+	ragflow: {'host': '0.0.0.0', 'http_port': 9380}
+	admin: {'host': '0.0.0.0', 'http_port': 9381}
+	mysql: {'name': 'rag_flow', 'user': 'root', 'password': '********', 'host': 'mysql', 'port': 3306, 'max_connections': 900, 'stale_timeout': 300, 'max_allowed_packet': 1073741824}
+	minio: {'user': 'rag_flow', 'password': '********', 'host': 'minio:9000', 'bucket': '', 'prefix_path': ''}
+	es: {'hosts': 'http://es01:9200', 'username': 'elastic', 'password': '********'}
+	os: {'hosts': 'http://opensearch01:9201', 'username': 'admin', 'password': '********'}
+	infinity: {'uri': 'infinity:23817', 'db_name': 'default_db'}
+	oceanbase: {'scheme': 'oceanbase', 'config': {'db_name': 'ragflow_doc', 'user': 'root@ragflow', 'password': '3bc95a46d6c71bf2c44ac2be189cc546', 'host': 'oceanbase', 'port': 2881}}
+	redis: {'db': 1, 'username': '', 'password': '********', 'host': 'redis:6379'}
+	user_default_llm: {'default_models': {'embedding_model': {'api_key': 'xxx', 'base_url': 'http://tei:80'}}}
+2026-02-08 01:41:22,422 WARNING  23 SECURITY WARNING: Using auto-generated SECRET_KEY.
+2026-02-08 01:41:22,425 WARNING  23 Load term.freq FAIL!
+2026-02-08 01:41:22,427 WARNING  23 Realtime synonym is disabled, since no redis connection.
+2026-02-08 01:41:22,430 WARNING  23 Load term.freq FAIL!
+2026-02-08 01:41:22,433 WARNING  23 Realtime synonym is disabled, since no redis connection.
+2026-02-08 01:41:22,434 INFO     23 MAX_CONTENT_LENGTH: 134217728
+2026-02-08 01:41:22,434 INFO     23 MAX_FILE_COUNT_PER_USER: 0
+2026-02-08 01:41:28,589 INFO     23 Init message_id sequence done, current max id is 1.
+2026-02-08 01:41:28,591 INFO     23 No memory found, no need to init memory size.
+2026-02-08 01:41:28,592 INFO     23 init web data success:2.26985502243042
+2026-02-08 01:41:28,594 INFO     23 Recursively importing plugins from path `/ragflow/plugin/embedded_plugins`
+2026-02-08 01:41:28,596 INFO     23 Loaded llm_tools plugin BadCalculatorPlugin version 1.0.0
+2026-02-08 01:41:28,598 INFO     23 RAGFlow HTTP server start...
+2026-02-08 01:41:28,717 INFO     23 Running on http://0.0.0.0:9380 (CTRL + C to quit)
+2026-02-08 01:41:29,598 INFO     23 Starting update_progress thread (delayed)
+2026-02-08 01:41:29,600 INFO     23 update_progress lock_value: 08d4b01b-f528-448c-9e0a-5fb9b9bd83d1
+2026-02-08 01:59:08,310 WARNING  23 Database connection issue (attempt 1/5): (0, '')
+2026-02-08 01:59:14,022 WARNING  23 Database connection issue (attempt 1/5): (0, '')

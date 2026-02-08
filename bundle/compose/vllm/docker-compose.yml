@@ -1,0 +1,37 @@
+services:
+  vllm:
+    image: ${VLLM_IMAGE}
+    container_name: vllm
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    ports:
+      - "${VLLM_PORT:-8000}:8000"
+    volumes:
+      - ${MODEL_ROOT}:/models
+      - ${HOST_LOG_ROOT:-/var/log/forstar}/vllm:/var/log/vllm
+    command:
+      - --model
+      - ${MODEL_PATH}
+      - --served-model-name
+      - ${MODEL_NAME}
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --gpu-memory-utilization
+      - ${GPU_MEMORY_UTILIZATION}
+      - --max-model-len
+      - ${MAX_MODEL_LEN}
+      - --swap-space
+      - ${SWAP_SPACE_GB}
+      - --cpu-offload-gb
+      - ${CPU_OFFLOAD_GB}
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+networks:
+  ragflow:
+    external: true

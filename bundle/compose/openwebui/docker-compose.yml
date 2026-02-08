@@ -1,0 +1,45 @@
+services:
+  ragflow-proxy:
+    container_name: ragflow-proxy
+    image: ${RAGFLOW_PROXY_IMAGE:-forstar/ragflow-openai-proxy:offline}
+    env_file:
+      - .env
+    environment:
+      - RAGFLOW_BASE_URL=http://ragflow-gpu:9380
+    command:
+      - /bin/sh
+      - -c
+      - uvicorn app:app --host 0.0.0.0 --port 8080 2>&1 | tee -a /var/log/ragflow-proxy/runtime.log
+    ports:
+      - "18080:8080"
+    volumes:
+      - ${HOST_LOG_ROOT:-/var/log/forstar}/ragflow-proxy:/var/log/ragflow-proxy
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+  openwebui:
+    container_name: openwebui
+    image: ${OPENWEBUI_IMAGE:-forstar/openwebui:offline}
+    env_file:
+      - .env
+    environment:
+      - OPENAI_API_BASE_URL=http://ragflow-proxy:8080/v1
+    command:
+      - /bin/bash
+      - -lc
+      - bash start.sh 2>&1 | tee -a /var/log/openwebui/runtime.log
+    ports:
+      - "3000:8080"
+    volumes:
+      - ${HOST_DATA_ROOT:-/tmp/forstar-data}/openwebui:/app/backend/data
+      - ${HOST_LOG_ROOT:-/var/log/forstar}/openwebui:/var/log/openwebui
+    depends_on:
+      - ragflow-proxy
+    networks:
+      - ragflow
+    restart: unless-stopped
+
+networks:
+  ragflow:
+    external: true
