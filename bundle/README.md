@@ -61,7 +61,7 @@ Optional vLLM source build overrides (PowerShell env vars):
 
 ```powershell
 $env:VLLM_DOCKERFILE = "docker/Dockerfile"   # default already
-$env:VLLM_BUILD_CONTEXT = "D:\Project\Codex\LLM\repos\vllm"
+$env:VLLM_BUILD_CONTEXT = ""
 $env:VLLM_CUDA_VERSION = "12.2.2"
 $env:VLLM_PYTHON_VERSION = "3.12"
 ```
