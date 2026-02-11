@@ -46,6 +46,7 @@ $VLLM_DOCKERFILE = if ($env:VLLM_DOCKERFILE) { $env:VLLM_DOCKERFILE } else { 'do
 $VLLM_BUILD_CONTEXT = if ($env:VLLM_BUILD_CONTEXT) { $env:VLLM_BUILD_CONTEXT } else { $vllmRepo }
 $VLLM_CUDA_VERSION = if ($env:VLLM_CUDA_VERSION) { $env:VLLM_CUDA_VERSION } else { '' }
 $VLLM_PYTHON_VERSION = if ($env:VLLM_PYTHON_VERSION) { $env:VLLM_PYTHON_VERSION } else { '' }
+$OPENWEBUI_SKIP_PYODIDE_FETCH = if ($env:OPENWEBUI_SKIP_PYODIDE_FETCH) { $env:OPENWEBUI_SKIP_PYODIDE_FETCH } else { 'true' }
 
 function Get-DotEnvValue {
     param(
@@ -115,6 +116,23 @@ function Resolve-BuildMode {
     }
 
     return $Mode
+}
+
+function Get-ProxyBuildArgs {
+    $proxyVars = @(
+        'HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY', 'NO_PROXY',
+        'http_proxy', 'https_proxy', 'all_proxy', 'no_proxy'
+    )
+
+    $args = @()
+    foreach ($name in $proxyVars) {
+        $value = [Environment]::GetEnvironmentVariable($name)
+        if (-not [string]::IsNullOrWhiteSpace($value)) {
+            $args += @('--build-arg', "$name=$value")
+        }
+    }
+
+    return $args
 }
 
 function Save-ImageTar {
@@ -232,14 +250,18 @@ if ($requested -contains 'openwebui') {
     if ($mode -eq 'source') {
         try {
             Write-Host "Building OpenWebUI from local source: $openwebuiRepo"
-            Invoke-Docker -DockerArgs @(
+            $openwebuiBuildArgs = @(
                 'build',
                 '--build-arg',
                 "WEBUI_BASE_PATH=$OPENWEBUI_BASE_PATH",
+                '--build-arg',
+                "OPENWEBUI_SKIP_PYODIDE_FETCH=$OPENWEBUI_SKIP_PYODIDE_FETCH",
                 '-t',
                 $OPENWEBUI_RELEASE_IMAGE,
                 $openwebuiRepo
             )
+            $openwebuiBuildArgs = @('build') + (Get-ProxyBuildArgs) + $openwebuiBuildArgs[1..($openwebuiBuildArgs.Length - 1)]
+            Invoke-Docker -DockerArgs $openwebuiBuildArgs
         } catch {
             if (-not $AllowPullFallback) {
                 throw

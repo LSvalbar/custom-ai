@@ -27,6 +27,7 @@ ARG GID=0
 FROM --platform=$BUILDPLATFORM node:22-alpine3.20 AS build
 ARG BUILD_HASH
 ARG WEBUI_BASE_PATH=""
+ARG OPENWEBUI_SKIP_PYODIDE_FETCH="true"
 
 # Set Node.js options (heap limit Allocation failed - JavaScript heap out of memory)
 # ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -42,7 +43,11 @@ RUN npm ci --force
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
 ENV WEBUI_BASE_PATH=${WEBUI_BASE_PATH}
-RUN npm run build
+RUN if [ "$OPENWEBUI_SKIP_PYODIDE_FETCH" = "true" ]; then \
+      npm run build:nopyodide; \
+    else \
+      npm run build || (echo "npm run build failed, fallback to build:nopyodide" && npm run build:nopyodide); \
+    fi
 
 ######## WebUI backend ########
 FROM python:3.11.14-slim-bookworm AS base

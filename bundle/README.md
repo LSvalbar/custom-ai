@@ -24,6 +24,14 @@ This bundle keeps only the required workflows:
 powershell -ExecutionPolicy Bypass -File .\bundle\scripts\build-images.ps1 -Component all -OpenWebUIBuildMode auto -VLLMBuildMode auto
 ```
 
+OpenWebUI build notes:
+- Default behavior now sets `OPENWEBUI_SKIP_PYODIDE_FETCH=true` during Docker build to avoid pyodide network failures.
+- If you need full pyodide prefetch in image build, set:
+
+```powershell
+$env:OPENWEBUI_SKIP_PYODIDE_FETCH = "false"
+```
+
 Source-first behavior:
 - OpenWebUI: local source in `repos/openwebui` first, fallback to pull by mode.
 - vLLM: local source in `repos/vllm` first, fallback to pull by mode.
@@ -114,4 +122,3 @@ bash scripts/python-env-reconcile.sh --cleanup-source --apply --create-venv --ve
 - OpenWebUI: `http://<SERVER_IP>:8888/ai/`
 - RAGFlow: `http://<SERVER_IP>:8889/`
 - vLLM: `http://<SERVER_IP>:8894/v1`
-
