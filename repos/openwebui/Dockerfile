@@ -28,6 +28,7 @@ FROM --platform=$BUILDPLATFORM node:22-alpine3.20 AS build
 ARG BUILD_HASH
 ARG WEBUI_BASE_PATH=""
 ARG OPENWEBUI_SKIP_PYODIDE_FETCH="true"
+ARG OPENWEBUI_USE_PREBUILT="false"
 
 # Set Node.js options (heap limit Allocation failed - JavaScript heap out of memory)
 # ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -37,16 +38,20 @@ WORKDIR /app
 # to store git revision in build
 RUN apk add --no-cache git
 
-COPY package.json package-lock.json ./
-RUN npm ci --force
-
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
 ENV WEBUI_BASE_PATH=${WEBUI_BASE_PATH}
-RUN if [ "$OPENWEBUI_SKIP_PYODIDE_FETCH" = "true" ]; then \
-      npm run build:nopyodide; \
+ENV CI=false
+ENV NODE_OPTIONS="--max-old-space-size=8192"
+RUN if [ "$OPENWEBUI_USE_PREBUILT" = "true" ] && [ -f "/app/build/index.html" ]; then \
+      echo "Using prebuilt frontend assets from build/"; \
     else \
-      npm run build || (echo "npm run build failed, fallback to build:nopyodide" && npm run build:nopyodide); \
+      npm ci --force && \
+      if [ "$OPENWEBUI_SKIP_PYODIDE_FETCH" = "true" ]; then \
+        npm run build:nopyodide; \
+      else \
+        npm run build || (echo "npm run build failed, fallback to build:nopyodide" && npm run build:nopyodide); \
+      fi; \
     fi
 
 ######## WebUI backend ########

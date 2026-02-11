@@ -26,6 +26,10 @@ powershell -ExecutionPolicy Bypass -File .\bundle\scripts\build-images.ps1 -Comp
 
 OpenWebUI build notes:
 - Default behavior now sets `OPENWEBUI_SKIP_PYODIDE_FETCH=true` during Docker build to avoid pyodide network failures.
+- If Docker-side frontend build still fails, `build-images.ps1` now auto-fallbacks to:
+1) local `npm ci --force`
+2) local `npm run build:nopyodide`
+3) Docker build with `OPENWEBUI_USE_PREBUILT=true`
 - If you need full pyodide prefetch in image build, set:
 
 ```powershell

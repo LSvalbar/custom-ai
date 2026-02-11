@@ -135,6 +135,38 @@ function Get-ProxyBuildArgs {
     return $args
 }
 
+function Invoke-LocalOpenWebUIPrebuild {
+    param([string]$RepoPath)
+
+    $npmCmd = Get-Command npm -ErrorAction SilentlyContinue
+    if (-not $npmCmd) {
+        throw "npm not found on local machine. Cannot run local OpenWebUI prebuild fallback."
+    }
+
+    $buildIndex = Join-Path $RepoPath 'build\index.html'
+
+    Push-Location $RepoPath
+    try {
+        Write-Host "Local prebuild: npm ci --force"
+        & npm ci --force
+        if ($LASTEXITCODE -ne 0) {
+            throw "Local prebuild failed at npm ci --force"
+        }
+
+        Write-Host "Local prebuild: npm run build:nopyodide"
+        & npm run build:nopyodide
+        if ($LASTEXITCODE -ne 0) {
+            throw "Local prebuild failed at npm run build:nopyodide"
+        }
+    } finally {
+        Pop-Location
+    }
+
+    if (-not (Test-Path $buildIndex)) {
+        throw "Local prebuild completed but build artifact missing: $buildIndex"
+    }
+}
+
 function Save-ImageTar {
     param(
         [string]$ComponentName,
@@ -252,23 +284,47 @@ if ($requested -contains 'openwebui') {
             Write-Host "Building OpenWebUI from local source: $openwebuiRepo"
             $openwebuiBuildArgs = @(
                 'build',
-                '--build-arg',
-                "WEBUI_BASE_PATH=$OPENWEBUI_BASE_PATH",
-                '--build-arg',
-                "OPENWEBUI_SKIP_PYODIDE_FETCH=$OPENWEBUI_SKIP_PYODIDE_FETCH",
+                '--progress',
+                'plain',
                 '-t',
                 $OPENWEBUI_RELEASE_IMAGE,
                 $openwebuiRepo
             )
-            $openwebuiBuildArgs = @('build') + (Get-ProxyBuildArgs) + $openwebuiBuildArgs[1..($openwebuiBuildArgs.Length - 1)]
+            $openwebuiBuildArgs = @('build') + (Get-ProxyBuildArgs) + @(
+                '--build-arg',
+                "WEBUI_BASE_PATH=$OPENWEBUI_BASE_PATH",
+                '--build-arg',
+                "OPENWEBUI_SKIP_PYODIDE_FETCH=$OPENWEBUI_SKIP_PYODIDE_FETCH"
+            ) + $openwebuiBuildArgs[1..($openwebuiBuildArgs.Length - 1)]
             Invoke-Docker -DockerArgs $openwebuiBuildArgs
         } catch {
-            if (-not $AllowPullFallback) {
-                throw
+            Write-Warning "OpenWebUI docker source build failed. Trying local prebuild fallback..."
+
+            try {
+                Invoke-LocalOpenWebUIPrebuild -RepoPath $openwebuiRepo
+
+                $openwebuiPrebuiltBuildArgs = @('build') + (Get-ProxyBuildArgs) + @(
+                    '--progress',
+                    'plain',
+                    '--build-arg',
+                    "WEBUI_BASE_PATH=$OPENWEBUI_BASE_PATH",
+                    '--build-arg',
+                    'OPENWEBUI_SKIP_PYODIDE_FETCH=true',
+                    '--build-arg',
+                    'OPENWEBUI_USE_PREBUILT=true',
+                    '-t',
+                    $OPENWEBUI_RELEASE_IMAGE,
+                    $openwebuiRepo
+                )
+                Invoke-Docker -DockerArgs $openwebuiPrebuiltBuildArgs
+            } catch {
+                if (-not $AllowPullFallback) {
+                    throw "OpenWebUI source build failed (docker build + local prebuild fallback). Re-run with docker build --progress=plain to inspect the last failing step."
+                }
+                Write-Warning "OpenWebUI source build and local prebuild fallback both failed. Falling back to pull: $OPENWEBUI_UPSTREAM_IMAGE"
+                Invoke-Docker -DockerArgs @('pull', $OPENWEBUI_UPSTREAM_IMAGE)
+                Invoke-Docker -DockerArgs @('tag', $OPENWEBUI_UPSTREAM_IMAGE, $OPENWEBUI_RELEASE_IMAGE)
             }
-            Write-Warning "OpenWebUI source build failed. Falling back to pull: $OPENWEBUI_UPSTREAM_IMAGE"
-            Invoke-Docker -DockerArgs @('pull', $OPENWEBUI_UPSTREAM_IMAGE)
-            Invoke-Docker -DockerArgs @('tag', $OPENWEBUI_UPSTREAM_IMAGE, $OPENWEBUI_RELEASE_IMAGE)
         }
     } else {
         Write-Host "Pulling OpenWebUI image: $OPENWEBUI_UPSTREAM_IMAGE"
