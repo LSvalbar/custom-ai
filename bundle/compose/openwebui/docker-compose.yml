@@ -1,17 +1,28 @@
 services:
+  openwebui-gateway:
+    container_name: openwebui-gateway
+    image: nginx:1.27-alpine
+    ports:
+      - "${OPENWEBUI_PORT:-8888}:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - openwebui
+    networks:
+      - ragflow
+    restart: unless-stopped
+
   ragflow-proxy:
     container_name: ragflow-proxy
     image: ${RAGFLOW_PROXY_IMAGE:-forstar/ragflow-openai-proxy:offline}
     env_file:
       - .env
     environment:
-      - RAGFLOW_BASE_URL=http://ragflow-gpu:9380
+      - RAGFLOW_BASE_URL=${RAGFLOW_BASE_URL:-http://ragflow-gpu:9380}
     command:
       - /bin/sh
       - -c
       - uvicorn app:app --host 0.0.0.0 --port 8080 2>&1 | tee -a /var/log/ragflow-proxy/runtime.log
-    ports:
-      - "18080:8080"
     volumes:
       - ${HOST_LOG_ROOT:-/var/log/forstar}/ragflow-proxy:/var/log/ragflow-proxy
     networks:
@@ -29,8 +40,6 @@ services:
       - /bin/bash
       - -lc
       - bash start.sh 2>&1 | tee -a /var/log/openwebui/runtime.log
-    ports:
-      - "3000:8080"
     volumes:
       - ${HOST_DATA_ROOT:-/tmp/forstar-data}/openwebui:/app/backend/data
       - ${HOST_LOG_ROOT:-/var/log/forstar}/openwebui:/var/log/openwebui

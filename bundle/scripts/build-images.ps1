@@ -33,6 +33,7 @@ $openwebuiEnvPath = Join-Path $bundleRoot 'compose\openwebui\.env'
 $OPENWEBUI_UPSTREAM_IMAGE = 'ghcr.io/open-webui/open-webui:v0.7.2'
 $OPENWEBUI_STABLE_IMAGE = 'forstar/openwebui:offline'
 $OPENWEBUI_RELEASE_IMAGE = "forstar/openwebui:$ReleaseTag"
+$OPENWEBUI_GATEWAY_IMAGE = 'nginx:1.27-alpine'
 
 $PROXY_STABLE_IMAGE = 'forstar/ragflow-openai-proxy:offline'
 $PROXY_RELEASE_IMAGE = "forstar/ragflow-openai-proxy:$ReleaseTag"
@@ -261,6 +262,19 @@ if ($requested -contains 'openwebui') {
         tar_file = $tar
         stable_image = $OPENWEBUI_STABLE_IMAGE
         release_image = $OPENWEBUI_RELEASE_IMAGE
+        release_tag = $ReleaseTag
+        updated_at = $timestamp
+    }
+
+    Write-Host "Pulling OpenWebUI gateway image: $OPENWEBUI_GATEWAY_IMAGE"
+    Invoke-Docker -DockerArgs @('pull', $OPENWEBUI_GATEWAY_IMAGE)
+    $gatewayTar = Save-ImageTar -ComponentName 'openwebui' -StableImage $OPENWEBUI_GATEWAY_IMAGE -ReleaseImage $OPENWEBUI_GATEWAY_IMAGE
+
+    $indexUpdates += [pscustomobject]@{
+        component = 'openwebui'
+        tar_file = $gatewayTar
+        stable_image = $OPENWEBUI_GATEWAY_IMAGE
+        release_image = $OPENWEBUI_GATEWAY_IMAGE
         release_tag = $ReleaseTag
         updated_at = $timestamp
     }

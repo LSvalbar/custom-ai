@@ -13,6 +13,23 @@ if ! mkdir -p "$HOST_LOG_ROOT" 2>/dev/null; then
   mkdir -p "$HOST_LOG_ROOT"
 fi
 
+# Elasticsearch requires vm.max_map_count >= 262144.
+# Apply immediately when possible and persist for reboot.
+if command -v sysctl >/dev/null 2>&1; then
+  current_vm_max_map_count="$(sysctl -n vm.max_map_count 2>/dev/null || echo 0)"
+  if [[ "$current_vm_max_map_count" -lt 262144 ]]; then
+    if [[ "$(id -u)" -eq 0 ]]; then
+      sysctl -w vm.max_map_count=262144 >/dev/null || true
+      mkdir -p /etc/sysctl.d
+      cat >/etc/sysctl.d/99-forstar.conf <<'EOF'
+vm.max_map_count=262144
+EOF
+    else
+      echo "Warning: vm.max_map_count=$current_vm_max_map_count (<262144). Run as root once to apply Elasticsearch kernel setting."
+    fi
+  fi
+fi
+
 # Data directories
 mkdir -p "$HOST_DATA_ROOT/openwebui"
 mkdir -p "$HOST_DATA_ROOT/ragflow/history_data_agent"
@@ -37,6 +54,11 @@ mkdir -p "$HOST_LOG_ROOT/redis"
 mkdir -p "$HOST_LOG_ROOT/elasticsearch"
 mkdir -p "$HOST_LOG_ROOT/opensearch"
 mkdir -p "$HOST_LOG_ROOT/vllm"
+
+# Ensure Elastic/OpenSearch data dirs are writable for uid/gid 1000 in containers.
+if [[ "$(id -u)" -eq 0 ]]; then
+  chown -R 1000:1000 "$HOST_DATA_ROOT/ragflow/elasticsearch" "$HOST_DATA_ROOT/ragflow/opensearch" >/dev/null 2>&1 || true
+fi
 
 echo "HOST_DATA_ROOT=$HOST_DATA_ROOT"
 echo "HOST_LOG_ROOT=$HOST_LOG_ROOT"

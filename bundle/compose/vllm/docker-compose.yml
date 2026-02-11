@@ -10,10 +10,12 @@ services:
       - "${VLLM_PORT:-8000}:8000"
     volumes:
       - ${MODEL_ROOT}:/models
+      - ${MODEL_ROOT}:${MODEL_ROOT}:ro
       - ${HOST_LOG_ROOT:-/var/log/forstar}/vllm:/var/log/vllm
     command:
       - --model
       - ${MODEL_PATH}
+      - --trust-remote-code
       - --served-model-name
       - ${MODEL_NAME}
       - --host
@@ -30,7 +32,7 @@ services:
       - ${CPU_OFFLOAD_GB}
     networks:
       - ragflow
-    restart: unless-stopped
+    restart: on-failure:3
 
 networks:
   ragflow:
